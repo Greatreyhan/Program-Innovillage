@@ -1,5 +1,7 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
+#include <NTPClient.h>
+#include <WiFiUdp.h>
 
 #define LEDP D7
 #define LED1 D1
@@ -7,9 +9,34 @@
 #define LED3 D5
 #define LED4 D6
 
+// Master Time
+long timeMaster = 0;
+
+// Parameter Pewaktu Penyiraman -> Kontrol 1 Relay (Valve)
+long tMulaiSiram1 = 6*3600; // Jam 6 Pagi
+long tMulaiSiram2 = 11*3600; // Jam 11 Siang
+long tMulaiSiram3 = 17*3600; // Jam 5 Sore
+long tDurasiSiram = 30*60; // Durasi Penyiraman 30 menit
+
+// Parameter Pewaktu Penyinaran -> Kontrol 2 Relay (Saklar Lampu)
+long tMulaiSinar = 18*3600; // Waktu Mulai Penyinaran jam 6 sore
+long tDurasiSinar = 5*3600; // Durasi Penyinaran selama 5 jam
+
+// Parameter Pewaktu Pemupukan -> Kontrol 1  Relay (Pompa)
+long dPupuk = 15; // Tanggal pemupukan 15
+long tMulaiPupuk = 6*3600; // Waktu Mulai Pemupukan
+long tDurasiPupuk = 15*60; // Durasi Pemupukan selama 15 menit
+
+// Parameter Sistem Security
+int sSecurity = 0; // kondisi tidak aktif
+
 // WiFi
 const char *ssid = "infinergy"; // Enter your WiFi name
 const char *password = "okeokeoke";  // Enter WiFi password
+
+// Define NTP Client to get time
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP, "pool.ntp.org");
 
 // MQTT Broker
 const char *mqtt_broker = "broker.emqx.io";
@@ -51,9 +78,14 @@ void setup() {
           delay(2000);
       }
   }
+  
   // publish and subscribe
   client.publish(topic, "wowoo");
   client.subscribe(topic);
+
+  // NTPClient to get Time
+  timeClient.begin();
+  timeClient.setTimeOffset(28800-3600);
 }
 
 void callback(char *topic, byte *payload, unsigned int length) {
@@ -103,5 +135,66 @@ void callback(char *topic, byte *payload, unsigned int length) {
 
 void loop() {
   client.loop();
-//  client.publish(topic,"newbie");
+  timeClient.update();
+  time_t epochTime = timeClient.getEpochTime(); // epochtime
+  String formattedTime = timeClient.getFormattedTime(); //10:49:52
+  int currentHour = timeClient.getHours(); // 10
+  int currentMinute = timeClient.getMinutes(); // 49
+  int currentSecond = timeClient.getSeconds(); //52  
+  struct tm *ptm = gmtime ((time_t *)&epochTime); 
+  int monthDay = ptm->tm_mday; // 11
+  int currentMonth = ptm->tm_mon+1; // 11
+  int currentYear = ptm->tm_year+1900; // 2022
+
+  timeMaster = (currentHour*3600)+(currentMinute*60)+currentSecond;
+
+  // Pewaktu Penyiraman -> ON : 1100
+  if((tMulaiSiram1 <= timeMaster <= (tMulaiSiram1+tDurasiSiram)) || (tMulaiSiram2 <= timeMaster <= (tMulaiSiram2+tDurasiSiram))|| (tMulaiSiram3 <= timeMaster <= (tMulaiSiram3+tDurasiSiram))){
+    sendBit(1,1,0,0);
+  }
+
+  // Pewaktu Penyinaran -> ON : 1101
+  else if(tMulaiSinar <= timeMaster <= (tMulaiSinar+tDurasiSinar)){
+    sendBit(1,1,0,1);
+  }
+
+  // Pewaktu Pemupukan -> ON : 1110
+  else if(monthDay == dPupuk){
+    if(tMulaiPupuk <= timeMaster <= (tMulaiPupuk+tDurasiPupuk)){
+      sendBit(1,1,1,0);
+    }
+  }
+  else{
+    sendBit(0,0,0,0);
+  }
+
+}
+
+void sendBit(byte a, byte b, byte c, byte d){
+  digitalWrite(LEDP, HIGH);
+  if(a == 1){
+    digitalWrite(LED1, HIGH);
+  }
+  else{
+    digitalWrite(LED1, LOW);
+  }
+  if(b == 1){
+    digitalWrite(LED2, HIGH);
+  }
+  else{
+    digitalWrite(LED2, LOW);
+  }
+  if(c == 1){
+    digitalWrite(LED3, HIGH);
+  }
+  else{
+    digitalWrite(LED3, LOW);
+  }
+  if(d == 1){
+    digitalWrite(LED4, HIGH);
+  }
+  else{
+    digitalWrite(LED4, LOW);
+  }
+  digitalWrite(LEDP, LOW);
 }

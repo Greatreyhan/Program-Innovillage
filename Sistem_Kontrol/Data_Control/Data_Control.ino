@@ -1,12 +1,16 @@
-#define D1 5
-#define D2 6
-#define D3 7
+#define D1 11
+#define D2 10
+#define D3 9
 #define D4 8
-#define DP 9
-#define IN1 10
-#define IN2 11
-#define IN3 12
-#define IN4 13
+#define DP 7
+#define IN1 3
+#define IN2 4
+#define IN3 5
+#define IN4 6
+#define IN5 A1
+#define IN6 A0
+#define IN7 2
+#define IN8 13
 
 void setup() {
   pinMode(D1, INPUT);
@@ -18,6 +22,10 @@ void setup() {
   pinMode(IN2, OUTPUT);
   pinMode(IN3, OUTPUT);
   pinMode(IN4, OUTPUT);
+  pinMode(IN5, OUTPUT);
+  pinMode(IN6, OUTPUT);
+  pinMode(IN7, OUTPUT);
+  pinMode(IN8, OUTPUT);
   Serial.begin(9600);
 }
 
@@ -42,30 +50,90 @@ void loop() {
           digitalWrite(IN2,LOW);
           digitalWrite(IN3,LOW);
           digitalWrite(IN4,LOW);
+          digitalWrite(IN5,LOW);
+          digitalWrite(IN6,LOW);
+          digitalWrite(IN7,LOW);
+          digitalWrite(IN8,LOW);
           break;
         case 1:
           digitalWrite(IN1,HIGH);
           digitalWrite(IN2,LOW);
           digitalWrite(IN3,LOW);
           digitalWrite(IN4,LOW);
+          digitalWrite(IN5,LOW);
+          digitalWrite(IN6,LOW);
+          digitalWrite(IN7,LOW);
+          digitalWrite(IN8,LOW);
           break;
         case 2:
           digitalWrite(IN1,LOW);
           digitalWrite(IN2,HIGH);
           digitalWrite(IN3,LOW);
           digitalWrite(IN4,LOW);
+          digitalWrite(IN5,LOW);
+          digitalWrite(IN6,LOW);
+          digitalWrite(IN7,LOW);
+          digitalWrite(IN8,LOW);
           break;
         case 3:
           digitalWrite(IN1,LOW);
           digitalWrite(IN2,LOW);
           digitalWrite(IN3, HIGH);
           digitalWrite(IN4,LOW);
+          digitalWrite(IN5,LOW);
+          digitalWrite(IN6,LOW);
+          digitalWrite(IN7,LOW);
+          digitalWrite(IN8,LOW);
           break;
         case 4:
           digitalWrite(IN1,LOW);
           digitalWrite(IN2,LOW);
           digitalWrite(IN3,LOW);
           digitalWrite(IN4, HIGH);
+          digitalWrite(IN5,LOW);
+          digitalWrite(IN6,LOW);
+          digitalWrite(IN7,LOW);
+          digitalWrite(IN8,LOW);
+          break;
+         case 5:
+          digitalWrite(IN1,LOW);
+          digitalWrite(IN2,LOW);
+          digitalWrite(IN3,LOW);
+          digitalWrite(IN4,LOW);
+          digitalWrite(IN5,HIGH);
+          digitalWrite(IN6,LOW);
+          digitalWrite(IN7,LOW);
+          digitalWrite(IN8,LOW);
+          break;
+         case 6:
+          digitalWrite(IN1,LOW);
+          digitalWrite(IN2,LOW);
+          digitalWrite(IN3,LOW);
+          digitalWrite(IN4,LOW);
+          digitalWrite(IN5,LOW);
+          digitalWrite(IN6,HIGH);
+          digitalWrite(IN7,LOW);
+          digitalWrite(IN8,LOW);
+          break;
+         case 7:
+          digitalWrite(IN1,LOW);
+          digitalWrite(IN2,LOW);
+          digitalWrite(IN3,LOW);
+          digitalWrite(IN4,LOW);
+          digitalWrite(IN5,LOW);
+          digitalWrite(IN6,LOW);
+          digitalWrite(IN7,HIGH);
+          digitalWrite(IN8,LOW);
+          break;
+         case 8:
+          digitalWrite(IN1,LOW);
+          digitalWrite(IN2,LOW);
+          digitalWrite(IN3,LOW);
+          digitalWrite(IN4,LOW);
+          digitalWrite(IN5,LOW);
+          digitalWrite(IN6,LOW);
+          digitalWrite(IN7,LOW);
+          digitalWrite(IN8,HIGH);
           break;
         default:
           Serial.println("Error Transmission");

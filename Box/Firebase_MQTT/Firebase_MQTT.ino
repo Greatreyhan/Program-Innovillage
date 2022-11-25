@@ -8,6 +8,13 @@
 #include <FirebaseESP8266.h>
 #endif
 
+#include <NTPClient.h>
+#include <WiFiUdp.h>
+
+// Define NTP Client to get time
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP, "pool.ntp.org");
+
 //Provide the token generation process info.
 #include "addons/TokenHelper.h"
 //Provide the RTDB payload printing info and other helper functions.
@@ -19,7 +26,7 @@ const char *password = "okeokeoke";  // Enter WiFi password
 
 // MQTT Broker
 const char *mqtt_broker = "broker.emqx.io";
-const char *topic = "aldeaInnovation/B1";
+const char *topic = "aldeaInnovation/B5";
 const char *mqtt_username = "emqx";
 const char *mqtt_password = "public";
 const int mqtt_port = 1883;
@@ -58,7 +65,7 @@ DHT dht ( DHTPIN, DHTTYPE ) ;
  
 unsigned long sendDataPrevMillis = 0;
 unsigned long previousMillis = 0;
-const long interval = 10000;
+const long interval = 3600000;
 
 int count = 0;
 
@@ -112,6 +119,9 @@ void setup()
   }
   client.subscribe(topic);
 
+  timeClient.begin();
+  timeClient.setTimeOffset(25200);
+
   pinMode(RCWL, INPUT);
   dht.begin ( );
 }
@@ -129,6 +139,17 @@ void callback(char *topic, byte *payload, unsigned int length) {
 }
 void loop()
 {
+   // For Timing-----------------------------
+  timeClient.update();
+
+  time_t epochTime = timeClient.getEpochTime();
+  int currentHour = timeClient.getHours();
+  struct tm *ptm = gmtime ((time_t *)&epochTime);
+  int monthDay = ptm->tm_mday;
+  int currentMonth = ptm->tm_mon+1;
+  int currentYear = ptm->tm_year+1900;
+  String currentDate = String(currentYear) + "/" + String(currentMonth) + "/" + String(monthDay);
+  //-------------------------------------------------------------------------------------
    client.loop();
    if(digitalRead(RCWL)== 1){
     client.publish(topic, "1");
@@ -142,12 +163,11 @@ void loop()
    int soil = analogRead(soil);
    
    if (currentMillis - previousMillis >= interval) {
-    // save the last time you blinked the LED
     previousMillis = currentMillis;
 
       if (Firebase.ready())
       {
-        if (Firebase.pushInt(fbdo, "/test/humidity", humidity)) {
+        if (Firebase.pushInt(fbdo, "/data5/humidity/"+currentDate, humidity)) {
     
             Serial.println(fbdo.dataPath());
           
@@ -158,7 +178,7 @@ void loop()
           } else {
             Serial.println(fbdo.errorReason());
           }
-          if (Firebase.pushInt(fbdo, "/test/temperature", temprature)) {
+          if (Firebase.pushInt(fbdo, "/data5/temperature/"+currentDate, temprature)) {
     
             Serial.println(fbdo.dataPath());
           
@@ -169,7 +189,7 @@ void loop()
           } else {
             Serial.println(fbdo.errorReason());
           }
-          if (Firebase.pushInt(fbdo, "/test/soil", soil)) {
+          if (Firebase.pushInt(fbdo, "/data5/soil/"+currentDate, soil)) {
     
             Serial.println(fbdo.dataPath());
           
